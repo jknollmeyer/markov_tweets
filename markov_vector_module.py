@@ -21,6 +21,19 @@ class markov_vector:
             self.transitionsPerState[state] = 1
     # function: generateTransition(state)
 
+    def build_from_file(self, fileName):
+        with open(fileName) as fileData:
+            content = fileData.readlines()
+        for line in content:
+            # don't try to add states from an empty line
+            if len(line) < 3:
+                break
+            words = line.split()
+            self.add_state("NULL", words[0])
+            for i in xrange(len(words)-2):
+                self.add_state(words[i], words[i+1])
+            self.add_state(words[-1], None)
+
     def generateTransition(self, state):
         if state not in self.transitionCounts:
             return None
