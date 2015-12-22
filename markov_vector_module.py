@@ -7,8 +7,7 @@ class markov_vector:
         self.transitionCounts = dict()
         self.transitionsPerState = dict()
 
-    # add an state or beef up probability
-
+    # add a possible transition or raise the weight of a current one
     def add_state(self, state, transition):
         if state in self.transitionCounts:
             if transition in self.transitionCounts[state]:
@@ -19,7 +18,6 @@ class markov_vector:
         else:
             self.transitionCounts[state] = dict({transition: 1})
             self.transitionsPerState[state] = 1
-    # function: generateTransition(state)
 
     def build_from_file(self, fileName):
         with open(fileName) as fileData:
@@ -29,11 +27,28 @@ class markov_vector:
             if len(line) < 3:
                 break
             words = line.split()
+
+            # special cases for beginnings
+            self.add_state((None, None), words[0])
+            self.add_state((None, words[0]), words[1])
+
+            # add all transitions for a 2-tuple and the following word
+            for i in xrange(0, len(words)-3):
+                self.add_state((words[i], words[i+1]), words[i+2])
+
+            # special cases for endings
+            self.add_state((words[len(words)-2], words[len(words)-1]),
+                           None)
+            self.add_state((words[len(words)-1], None), None)
+
+            # old code for states with a size of only 1
+            ''''
             self.add_state("NULL", words[0])
             for i in xrange(len(words)-2):
                 self.add_state(words[i], words[i+1])
             self.add_state(words[-1], None)
-
+            '''
+    # given a current state, randomly generate the next state
     def generateTransition(self, state):
         if state not in self.transitionCounts:
             return None
