@@ -1,4 +1,5 @@
-from flask import Flask, redirect, flash, session, request, url_for
+from flask import Flask, redirect, flash, session, request
+from flask import url_for, send_from_directory
 from flask_oauthlib.client import OAuth
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ def login():
 
 @app.route('/oauth-authorized')
 def oauth_authorized():
-    next_url = request.args.get('next') or url_for('hello')
+    next_url = request.args.get('next') or url_for('root')
     resp = twitter.authorized_response()
     if resp is None:
         flash(u'You denied the request to sign in.')
@@ -45,8 +46,14 @@ def oauth_authorized():
 
 
 @app.route("/")
-def hello():
-    return "<a href=\"http://localhost:5000/login\">Hello World!</a>"
+def root():
+    return app.send_static_file('index.html')
+
+
+@app.route('/<path:path>')
+def static_proxy(path):
+    # send_static_file will guess the correct MIME type
+    return app.send_static_file(path)
 
 if __name__ == "__main__":
     app.secret_key = 'wololo'
