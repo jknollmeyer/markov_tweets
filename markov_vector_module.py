@@ -19,15 +19,11 @@ class markov_vector:
             self.transitionCounts[state] = dict({transition: 1})
             self.transitionsPerState[state] = 1
 
-    def build_from_file(self, fileName):
-        with open(fileName) as fileData:
-            content = fileData.readlines()
-        for line in content:
-            # don't try to add states from an empty line
-            if len(line) < 3:
-                break
+    def build_from_corpus(self, content):
+        for line in content.splitlines():
             words = line.split()
-
+            if len(words) < 3:
+                break
             # special cases for beginnings
             self.add_state((None, None), words[0])
             self.add_state((None, words[0]), words[1])
@@ -48,6 +44,7 @@ class markov_vector:
                 self.add_state(words[i], words[i+1])
             self.add_state(words[-1], None)
             '''
+
     # given a current state, randomly generate the next state
     def generateTransition(self, state):
         if state not in self.transitionCounts:

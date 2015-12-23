@@ -1,6 +1,7 @@
 from flask import Flask
 from application_only_auth import Client
 import json
+import markov_vector_module
 app = Flask(__name__)
 
 key_file = open('api_key.txt', 'r')
@@ -22,11 +23,23 @@ def static_proxy(path):
 @app.route("/")
 def root():
     api_output = client.request(
-        'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=realdonaldtrump&count=5'
+        'https://api.twitter.com/1.1/statuses/user_timeline.json?' +
+        'screen_name=realdonaldtrump&count=200'
         )
-    return_text = ''
+    text_corpus = ''
     for tweet in api_output:
-        return_text = return_text + tweet['text'] + '\n'
+        text_corpus = text_corpus + tweet['text'] + '\n'
+    vector = markov_vector_module.markov_vector()
+    vector.build_from_corpus(text_corpus)
+
+    return_text = ''
+    current = vector.generateTransition((None, None))
+    last = None
+    while current is not None and len(return_text) < 130:
+        return_text = return_text + current + ' '
+        temp = current
+        current = vector.generateTransition((last, current))
+        last = temp
     return return_text
 
 
