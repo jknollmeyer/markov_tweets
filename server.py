@@ -21,11 +21,18 @@ def static_proxy(path):
 
 @app.route("/")
 def root():
-    tweet = client.request(
-        'https://api.twitter.com/1.1/statuses/show.json?id=316683059296624640'
+    api_output = client.request(
+        'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=realdonaldtrump&count=5'
         )
-    return json.dumps(tweet, sort_keys=True, indent=4, separators=(',', ':'))
-    # return app.send_static_file('index.html')
+    return_text = ''
+    for tweet in api_output:
+        return_text = return_text + tweet['text'] + '\n'
+    return return_text
+
+
+#@app.route("/")
+#def root():
+#    return app.send_static_file('index.html')
 
 
 if __name__ == "__main__":
