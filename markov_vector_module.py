@@ -22,6 +22,7 @@ class markov_vector:
     def build_from_corpus(self, content):
         for line in content.splitlines():
             words = line.split()
+            # omit lines which are too short to process
             if len(words) < 3:
                 break
             # special cases for beginnings
