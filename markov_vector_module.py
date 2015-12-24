@@ -23,8 +23,9 @@ class markov_vector:
         for line in content.splitlines():
             words = line.split()
             # omit lines which are too short to process
-            if len(words) < 3:
-                break
+            if len(words) < 5:
+                continue
+
             # special cases for beginnings
             self.add_state((None, None), words[0])
             self.add_state((None, words[0]), words[1])
