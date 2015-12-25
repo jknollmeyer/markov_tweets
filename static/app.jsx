@@ -7,13 +7,12 @@ var UsernameInput = React.createClass({
   },
   handleSubmit: function(e){
     e.preventDefault();
-    this.setState({PageData: 'Loading....'});
+    this.setState({pageData: 'Loading...', loading: true, responseSuccess: false, status: ''});
     var username = this.state.username.trim();
     if(!username){
       this.setState({pageData: "Please enter a username" });
       return;
     }
-
 
     $.ajax({
       url: "http://localhost:5000/tweets",
@@ -21,24 +20,23 @@ var UsernameInput = React.createClass({
       data: {username: username},
       success: function(data) {
         //Catch a 404 from the API call, which should be caused by invalid user
-        if (data == '404') this.setState({status: 'Username entered was invalid'});
+        if (data == '404') this.setState({status: 'Username entered was invalid', loading: false, pageData: ''});
         //Catchall for all other HTTP errors
-        else if(data == 'UNKNOWN') this.setState({status: 'Unknown error'});
+        else if(data == 'UNKNOWN') this.setState({status: 'Unknown error', loading: false, pageData: ''});
         //Save the generated tweet text and record a successful response
-        else this.setState({pageData: data, responseSuccess: true});
+        else this.setState({pageData: data, responseSuccess: true, loading: false});
       }.bind(this),
       error: function(xhr, status, err){
         console.error(status, err.toString());
       }.bind(this)
     });
-    this.setState({username: ''});
   },
 
 
   render: function(){
     var partial;
     //If we generate a tweet, partial becomes a twitter card
-    if(this.state.responseSuccess){
+    if(this.state.responseSuccess || this.state.loading){
       partial = (
         <blockquote className="twitter-tweet">{this.state.pageData}</blockquote>
       )
