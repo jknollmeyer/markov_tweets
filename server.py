@@ -1,7 +1,6 @@
 from flask import Flask, request
 from application_only_auth import Client
 import markov_vector_module
-from urllib2 import HTTPError
 app = Flask(__name__)
 
 key_file = open('api_key.txt', 'r')

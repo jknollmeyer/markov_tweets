@@ -13,17 +13,19 @@ var UsernameInput = React.createClass({
       this.setState({pageData: "Please enter a username" });
       return;
     }
+
+
     $.ajax({
       url: "http://localhost:5000/tweets",
       type: 'POST',
       data: {username: username},
       success: function(data) {
-        if (data == '404'){
-          data = 'Username entered was invalid';
-        }else if(data == 'UNKNOWN'){
-          data = 'There was an unkown error';
-        }
-        this.setState({pageData: data});
+        //Catch a 404 from the API call, which should be caused by invalid user
+        if (data == '404') this.setState({status: 'Username entered was invalid'});
+        //Catchall for all other HTTP errors
+        else if(data == 'UNKNOWN') this.setState({status: 'Unknown error'});
+        //Save the generated tweet text and record a successful response
+        else this.setState({pageData: data, responseSuccess: true});
       }.bind(this),
       error: function(xhr, status, err){
         console.error(status, err.toString());
@@ -31,15 +33,19 @@ var UsernameInput = React.createClass({
     });
     this.setState({username: ''});
   },
+
+
   render: function(){
     var partial;
+    //If we generate a tweet, partial becomes a twitter card
     if(this.state.responseSuccess){
       partial = (
-        <blockquote class="twitter-tweet">
-          <p>{this.state.pageData}</p>
-        </blockquote>
+        <blockquote className="twitter-tweet">{this.state.pageData}</blockquote>
       )
+    }else{
+      partial = null;
     }
+
     return (
       <div>
         <form className="usernameForm" onSubmit={this.handleSubmit}>
@@ -49,9 +55,10 @@ var UsernameInput = React.createClass({
             value={this.state.username}
             onChange={this.handleUsernameChange}
           />
-        <input type="submit" value="Generate" />
+          <input type="submit" value="Generate" />
         </form>
-        <p>{this.state.pageData}</p>
+        <p>{this.state.status}</p>
+        {partial}
     </div>
     );
   }
@@ -62,11 +69,3 @@ ReactDOM.render(
   <UsernameInput />,
   document.getElementById('twitter_login')
 );
-
-
-<blockquote class="twitter-tweet">
-  <p>Currently testing: jQuery and CSS animations: fly-in - </p>
-      <a data-datetime="2012-12-03T18:51:11+00:00">December 3, 2012</a>
-
-  </blockquote>
-<script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
