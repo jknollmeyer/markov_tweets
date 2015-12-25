@@ -1,7 +1,10 @@
 from flask import Flask, request
+from redis import Redis
 from application_only_auth import Client
 import markov_vector_module
 app = Flask(__name__)
+
+redis = Redis()
 
 key_file = open('api_key.txt', 'r')
 secret_file = open('api_secret.txt', 'r')
@@ -21,10 +24,10 @@ def static_proxy(path):
 
 @app.route("/tweets", methods=['POST'])
 def tweets():
-    text_corpus = ''
     maxid = None
+
     # paginate through the tweets, getting 200 at a time
-    for i in xrange(1):
+    for i in xrange(16):
         requestString = (
             'https://api.twitter.com/1.1/statuses/user_timeline.json?' +
             'screen_name=' + request.form['username'] +
@@ -33,7 +36,7 @@ def tweets():
         )
         # use id from the previous oldest tweet to allow us to paginate
         if maxid is not None:
-            requestString += ('&max_id=' + str(maxid))
+            requestString += ('&max_id=' + str(maxid - 1))
         try:
             api_output = client.request(requestString)
         except Exception, err:
@@ -42,10 +45,23 @@ def tweets():
             else:
                 return "UNKNOWN"
 
-        # go through the tweets and add them to the text corpus
+        # make sure the request isn't already cached
+        if redis.exists(request.form['username']):
+            user_tweets = redis.hgetall(request.form['username'])
+            if len(api_output) and str(api_output[0]['id']) in user_tweets:
+                break
+        else:
+            user_tweets = dict()
+
+        # go through the tweets and add them to the redis cache
         for tweet in api_output:
-            text_corpus += tweet['text'] + '\n'
+            user_tweets[tweet['id']] = tweet['text']
             maxid = tweet['id']
+        redis.hmset(request.form['username'], user_tweets)
+
+    user_tweets = redis.hgetall(request.form['username'])
+    text_corpus = "\n".join([text.decode('utf-8') for id, text in user_tweets.items()])
+
     # initialize the markov chain
     vector = markov_vector_module.markov_vector()
     vector.build_from_corpus(text_corpus)
