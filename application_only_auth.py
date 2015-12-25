@@ -41,7 +41,7 @@ class Client(object):
         try:
             response = urlopen(request)
         except HTTPError:
-            raise ClientException
+            raise
 
         raw_data = response.read().decode('utf-8')
         data = json.loads(raw_data)
