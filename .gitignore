@@ -1,0 +1,5 @@
+.DS_Store
+*.rdb
+*.pyc
+api_key.txt
+api_secret.txt
