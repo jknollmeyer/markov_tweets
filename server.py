@@ -2,6 +2,7 @@ from flask import Flask, request
 from redis import Redis
 from application_only_auth import Client
 import markov_vector_module
+import json
 app = Flask(__name__)
 
 redis = Redis()
@@ -24,7 +25,7 @@ def static_proxy(path):
 
 @app.route("/tweets", methods=['POST'])
 def tweets():
-    maxid = None
+    maxid = userImageUrl = None
 
     # paginate through the tweets, getting 200 at a time
     for i in xrange(16):
@@ -44,7 +45,8 @@ def tweets():
                 return str(404)
             else:
                 return "UNKNOWN"
-
+        if userImageUrl is None:
+            userImageUrl = api_output[0]['user']['profile_image_url']
         # make sure the request isn't already cached
         if redis.exists(request.form['username']):
             user_tweets = redis.hgetall(request.form['username'])
@@ -77,7 +79,8 @@ def tweets():
             temp = current
             current = vector.generateTransition((last, current))
             last = temp
-    return return_text
+    data = json.dumps({'tweet': return_text, 'pic': userImageUrl})
+    return data
 
 
 @app.route("/test")

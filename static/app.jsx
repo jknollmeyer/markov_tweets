@@ -17,6 +17,7 @@ var UsernameInput = React.createClass({
     $.ajax({
       url: "http://localhost:5000/tweets",
       type: 'POST',
+      dataType: 'json',
       data: {username: username},
       success: function(data) {
         //Catch a 404 from the API call, which should be caused by invalid user
@@ -24,7 +25,11 @@ var UsernameInput = React.createClass({
         //Catchall for all other HTTP errors
         else if(data == 'UNKNOWN') this.setState({status: 'Unknown error', loading: false, pageData: ''});
         //Save the generated tweet text and record a successful response
-        else this.setState({pageData: data, responseSuccess: true, loading: false});
+        else this.setState({
+          pageData: data.tweet,
+          twitPic: data.pic,
+          responseSuccess: true,
+          loading: false});
       }.bind(this),
       error: function(xhr, status, err){
         console.error(status, err.toString());
@@ -38,7 +43,11 @@ var UsernameInput = React.createClass({
     //If we generate a tweet, partial becomes a twitter card
     if(this.state.responseSuccess || this.state.loading){
       partial = (
-        <blockquote className="twitter-tweet">{this.state.pageData}</blockquote>
+        <blockquote className="twitter-tweet">
+          <img src={this.state.twitPic}/>
+          <span>@{this.state.username}</span>
+          <p>{this.state.pageData}</p>
+        </blockquote>
       )
     }else{
       partial = null;
