@@ -5,6 +5,9 @@ var UsernameInput = React.createClass({
   handleUsernameChange: function(e){
     this.setState({username: e.target.value});
   },
+  resetTweet: function(e){
+    this.setState({responseSuccess: false});
+  },
   handleSubmit: function(e){
     e.preventDefault();
     this.setState({pageData: 'Loading...', loading: true, responseSuccess: false, status: ''});
@@ -43,30 +46,44 @@ var UsernameInput = React.createClass({
     //If we generate a tweet, partial becomes a twitter card
     if(this.state.responseSuccess || this.state.loading){
       partial = (
-        <blockquote className="twitter-tweet">
-          <img src={this.state.twitPic}/>
-          <span>@{this.state.username}</span>
-          <p>{this.state.pageData}</p>
-        </blockquote>
+        <div>
+          <blockquote className="twitter-tweet">
+            <img src={this.state.twitPic}/>
+            <span>@{this.state.username}</span>
+            <p>{this.state.pageData}</p>
+          </blockquote>
+          <div>
+            <button type="button" className="btn btn-default"
+               onClick={this.handleSubmit}>
+              Regenerate Tweet</button>
+            <button type="button" className="btn btn-default"
+              onClick={this.resetTweet}>
+              Try a different account
+            </button>
+          </div>
+        </div>
+
+
       )
     }else{
-      partial = null;
+      partial = (
+        <div>
+          <form className="usernameForm" onSubmit={this.handleSubmit}>
+            <input
+              type="text"
+              placeholder="Twitter username"
+              value={this.state.username}
+              onChange={this.handleUsernameChange}
+            />
+            <input type="submit" value="Generate" />
+          </form>
+          <p>{this.state.status}</p>
+      </div>
+      )
     }
 
     return (
-      <div>
-        <form className="usernameForm" onSubmit={this.handleSubmit}>
-          <input
-            type="text"
-            placeholder="Twitter username"
-            value={this.state.username}
-            onChange={this.handleUsernameChange}
-          />
-          <input type="submit" value="Generate" />
-        </form>
-        <p>{this.state.status}</p>
-        {partial}
-    </div>
+      partial
     );
   }
 });
