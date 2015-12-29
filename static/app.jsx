@@ -1,19 +1,36 @@
 var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
               'Nov', 'Dec']
 
+var innerCenterStyle = {
+  display: "inline-block",
+  position: 'relative',
+  top: '40%',
+  WebkitTransform: 'translateY(-50%)',
+  msTransform: 'translateY(-50%)',
+  transform: 'translateY(-50%)',
+}
 var PageHTML = React.createClass({
   getInitialState: function(){
-    return {username: ''};
+    return {username: '@'};
   },
   handleUsernameChange: function(e){
-    this.setState({username: e.target.value});
+    if(e.target.value.charAt(0) != '@') this.setState({username: '@'+e.target.value});
+    else this.setState({username: e.target.value});
   },
   resetTweet: function(e){
     this.setState({responseSuccess: false});
   },
   handleSubmit: function(e){
     e.preventDefault();
-    this.setState({pageData: 'Loading...', loading: true, responseSuccess: false, status: ''});
+    this.setState({
+      pageData: 'Loading...',
+      loading: true,
+      responseSuccess: false,
+      status: '',
+      twitPic: '',
+      profileName: '',
+      tweetTime: '',
+    });
     var username = this.state.username.trim();
     if(!username){
       this.setState({pageData: "Please enter a username" });
@@ -68,15 +85,16 @@ var PageHTML = React.createClass({
     if(this.state.responseSuccess || this.state.loading){
       var usernameStyle = {fontWeight: 'normal', color: '#8899a6'};
       var twitpicStyle = {borderRadius: 5, width: 48, height: 48};
+      var tweetCardStyle = {textAlign: 'left', backgroundColor:'white'};
       partial = (
-        <div>
-          <blockquote className="twitter-tweet">
+        <div style={innerCenterStyle}>
+          <blockquote className="twitter-tweet" style={tweetCardStyle}>
             <a href={this.state.profileURL}>
                <img src={this.state.twitPic} style={twitpicStyle}/>
             </a>
             <span>&nbsp;{this.state.profileName}&nbsp;</span>
             <span style={usernameStyle}>
-              @{this.state.username}&nbsp;
+              {this.state.username}&nbsp;
               {this.state.tweetTime}
             </span>
             <p>{this.state.pageData}</p>
@@ -96,7 +114,7 @@ var PageHTML = React.createClass({
       )
     }else{
       partial = (
-        <div>
+        <div style={innerCenterStyle}>
           <form className="usernameForm" onSubmit={this.handleSubmit}>
             <input
               type="text"
@@ -119,6 +137,6 @@ var PageHTML = React.createClass({
 
 
 ReactDOM.render(
-  <PageHTML />,
-  document.getElementById('twitter_login')
+  <PageHTML/>,
+  document.getElementById('appContainer')
 );
