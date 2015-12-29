@@ -43,8 +43,17 @@ def tweets():
         except Exception, err:
             if err.code == 404:
                 return str(404)
+            elif err.code == 401:
+                return str(401)
             else:
                 return "UNKNOWN"
+        # Handle a request that returns no tweets
+        if api_output == []:
+            # If this t
+            if i == 1:
+                return str(204)
+            else:
+                break
         if userImageUrl is None:
             userImageUrl = api_output[0]['user']['profile_image_url']
         if profileName is None:

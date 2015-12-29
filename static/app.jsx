@@ -11,11 +11,16 @@ var innerCenterStyle = {
 }
 var PageHTML = React.createClass({
   getInitialState: function(){
-    return {username: '@'};
+    //Initialize the username and the fallback value
+    return {username: '@', usernameOldValue: '@'};
   },
   handleUsernameChange: function(e){
-    if(e.target.value.charAt(0) != '@') this.setState({username: '@'+e.target.value});
-    else this.setState({username: e.target.value});
+    //If the user tries to change the '@', revert to the last username
+    if(e.target.value.charAt(0) != '@') this.setState({username: this.state.usernameOldValue});
+    //Else, update the username and the fallback value
+    else{
+      this.setState({username: e.target.value, usernameOldValue: e.target.value});
+    }
   },
   resetTweet: function(e){
     this.setState({responseSuccess: false});
@@ -43,18 +48,14 @@ var PageHTML = React.createClass({
       dataType: 'json',
       data: {username: username},
       success: function(data) {
+        this.setState({loading: false, pageData: ''})
         //Catch a 404 from the API call, which should be caused by invalid user
-        if (data == '404') this.setState({
-          status: 'Username entered was invalid',
-          loading: false,
-          pageData: ''
-        });
+        if (data == '404') this.setState({status: 'Username entered was invalid'});
+        //401 Unauthorized Error
+        else if (data == '401') this.setState({status: 'The selected user has a protected account'});
         //Catchall for all other HTTP errors
-        else if(data == 'UNKNOWN') this.setState({
-          status: 'Unknown error',
-          loading: false,
-          pageData: ''
-        });
+        else if(data == '204') this.setState({status: 'Account has no tweets to generate a model from'})
+        else if(data == 'UNKNOWN') this.setState({status: 'Unknown error'});
         //Save the generated tweet text and record a successful response
         else{
           var now = new Date();
@@ -86,6 +87,7 @@ var PageHTML = React.createClass({
       var usernameStyle = {fontWeight: 'normal', color: '#8899a6'};
       var twitpicStyle = {borderRadius: 5, width: 48, height: 48};
       var tweetCardStyle = {textAlign: 'left', backgroundColor:'white'};
+      var statusStyle = {color: 'red', fonWeight: 'bold'}
       partial = (
         <div style={innerCenterStyle}>
           <blockquote className="twitter-tweet" style={tweetCardStyle}>
@@ -124,7 +126,7 @@ var PageHTML = React.createClass({
             />
             <input type="submit" value="Generate" />
           </form>
-          <p>{this.state.status}</p>
+          <p style={statusStyle}>{this.state.status}</p>
       </div>
       )
     }
