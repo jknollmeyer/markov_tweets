@@ -25,7 +25,7 @@ def static_proxy(path):
 
 @app.route("/tweets", methods=['POST'])
 def tweets():
-    maxid = userImageUrl = None
+    maxid = userImageUrl = profileName = None
 
     # paginate through the tweets, getting 200 at a time
     for i in xrange(16):
@@ -47,6 +47,8 @@ def tweets():
                 return "UNKNOWN"
         if userImageUrl is None:
             userImageUrl = api_output[0]['user']['profile_image_url']
+        if profileName is None:
+            profileName = api_output[0]['user']['name']
         # make sure the request isn't already cached
         if redis.exists(request.form['username']):
             user_tweets = redis.hgetall(request.form['username'])
@@ -79,7 +81,11 @@ def tweets():
             temp = current
             current = vector.generateTransition((last, current))
             last = temp
-    data = json.dumps({'tweet': return_text, 'pic': userImageUrl})
+    data = json.dumps({
+        'tweet': return_text,
+        'pic': userImageUrl,
+        'name': profileName
+    })
     return data
 
 

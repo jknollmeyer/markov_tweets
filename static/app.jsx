@@ -1,4 +1,7 @@
-var UsernameInput = React.createClass({
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
+              'Nov', 'Dec']
+
+var PageHTML = React.createClass({
   getInitialState: function(){
     return {username: ''};
   },
@@ -24,15 +27,33 @@ var UsernameInput = React.createClass({
       data: {username: username},
       success: function(data) {
         //Catch a 404 from the API call, which should be caused by invalid user
-        if (data == '404') this.setState({status: 'Username entered was invalid', loading: false, pageData: ''});
+        if (data == '404') this.setState({
+          status: 'Username entered was invalid',
+          loading: false,
+          pageData: ''
+        });
         //Catchall for all other HTTP errors
-        else if(data == 'UNKNOWN') this.setState({status: 'Unknown error', loading: false, pageData: ''});
+        else if(data == 'UNKNOWN') this.setState({
+          status: 'Unknown error',
+          loading: false,
+          pageData: ''
+        });
         //Save the generated tweet text and record a successful response
-        else this.setState({
-          pageData: data.tweet,
-          twitPic: data.pic,
-          responseSuccess: true,
-          loading: false});
+        else{
+          var now = new Date();
+          var dateString = (" - " + now.getDate() + " " + MONTHS[now.getMonth()]
+                            + " " + now.getFullYear());
+          var profileURL = "https://twitter.com/" + this.state.username;
+          this.setState({
+            pageData: data.tweet,
+            twitPic: data.pic,
+            responseSuccess: true,
+            loading: false,
+            tweetTime: dateString,
+            profileURL: profileURL,
+            profileName: data.name
+          });
+        }
       }.bind(this),
       error: function(xhr, status, err){
         console.error(status, err.toString());
@@ -45,11 +66,19 @@ var UsernameInput = React.createClass({
     var partial;
     //If we generate a tweet, partial becomes a twitter card
     if(this.state.responseSuccess || this.state.loading){
+      var usernameStyle = {fontWeight: 'normal', color: '#8899a6'};
+      var twitpicStyle = {borderRadius: 5, width: 48, height: 48};
       partial = (
         <div>
           <blockquote className="twitter-tweet">
-            <img src={this.state.twitPic}/>
-            <span>@{this.state.username}</span>
+            <a href={this.state.profileURL}>
+               <img src={this.state.twitPic} style={twitpicStyle}/>
+            </a>
+            <span>&nbsp;{this.state.profileName}&nbsp;</span>
+            <span style={usernameStyle}>
+              @{this.state.username}&nbsp;
+              {this.state.tweetTime}
+            </span>
             <p>{this.state.pageData}</p>
           </blockquote>
           <div>
@@ -90,6 +119,6 @@ var UsernameInput = React.createClass({
 
 
 ReactDOM.render(
-  <UsernameInput />,
+  <PageHTML />,
   document.getElementById('twitter_login')
 );
