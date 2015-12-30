@@ -1,6 +1,3 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
-import {TwitterButton} from 'react-social'
 var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
               'Nov', 'Dec']
 
@@ -90,7 +87,7 @@ var PageHTML = React.createClass({
       var usernameStyle = {fontWeight: 'normal', color: '#8899a6'};
       var twitpicStyle = {borderRadius: 5, width: 48, height: 48};
       var tweetCardStyle = {textAlign: 'left', backgroundColor:'white'};
-      var statusStyle = {color: 'red', fontWeight: 'bold'}
+      var statusStyle = {color: 'red', fonWeight: 'bold'}
       partial = (
         <div style={innerCenterStyle}>
           <blockquote className="twitter-tweet" style={tweetCardStyle}>
@@ -108,7 +105,6 @@ var PageHTML = React.createClass({
             <button type="button" className="btn btn-default"
                onClick={this.handleSubmit}>
               Regenerate Tweet</button>
-            <TwitterButton url="foo"></TwitterButton>
             <button type="button" className="btn btn-default"
               onClick={this.resetTweet}>
               Try a different account
