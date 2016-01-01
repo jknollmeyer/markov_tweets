@@ -7,6 +7,7 @@ app = Flask(__name__)
 
 redis = Redis()
 
+# import the key and secret from locally stored files (so they aren't in git)
 key_file = open('api_key.txt', 'r')
 secret_file = open('api_secret.txt', 'r')
 consumer_key = key_file.readline().rstrip('\n')
@@ -17,13 +18,13 @@ client = Client(consumer_key, consumer_secret)
 oauth_url = 'https://api.twitter.com/oauth2/token'
 
 
-@app.route('/<path:path>')
+@app.route('/<path:path>')  # Set up static routing to serve the front end
 def static_proxy(path):
     # send_static_file will guess the correct MIME type
     return app.send_static_file(path)
 
 
-@app.route("/tweets", methods=['POST'])
+@app.route("/tweets", methods=['POST'])  # Route to activate tweet generation
 def tweets():
     maxid = userImageUrl = profileName = None
 
@@ -38,6 +39,7 @@ def tweets():
         # use id from the previous oldest tweet to allow us to paginate
         if maxid is not None:
             requestString += ('&max_id=' + str(maxid - 1))
+        # Exception handling for API requests i.e. HTTP 400 errors
         try:
             api_output = client.request(requestString)
         except Exception, err:
@@ -49,7 +51,7 @@ def tweets():
                 return "UNKNOWN"
         # Handle a request that returns no tweets
         if api_output == []:
-            # If this t
+            # If this first batch of tweets is empty, send 204 no content
             if i == 1:
                 return str(204)
             else:
@@ -96,11 +98,6 @@ def tweets():
         'name': profileName
     })
     return data
-
-
-@app.route("/test")
-def test():
-    return "adsasdasdasd"
 
 
 @app.route("/")
