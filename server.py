@@ -27,7 +27,7 @@ def static_proxy(path):
 @app.route("/tweets", methods=['POST'])  # Route to activate tweet generation
 def tweets():
     maxid = userImageUrl = profileName = None
-    stateLength = 2
+    stateLength = 3
     # paginate through the tweets, getting 200 at a time
     for i in xrange(16):
         requestString = (
@@ -79,7 +79,7 @@ def tweets():
 
     # initialize the markov chain
     vector = markov_vector_module.markov_vector()
-    vector.build_from_corpus(text_corpus)
+    vector.build_from_corpus(text_corpus, stateLength)
     return_text = ''
     # build then chain, but re-do process if the result is too short
     stateList = [None] * stateLength

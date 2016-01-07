@@ -19,27 +19,29 @@ class markov_vector:
             self.transitionCounts[state] = dict({transition: 1})
             self.transitionsPerState[state] = 1
 
-    def build_from_corpus(self, content):
+    def build_from_corpus(self, content, chainLength):
         for line in content.splitlines():
             words = line.split()
             # omit lines which are too short to process
-            if len(words) < 5:
+            if len(words) < chainLength:
                 continue
 
             # special cases for beginnings
-            self.add_state((None, None), words[0])
-            self.add_state((None, words[0]), words[1])
+            stateList = [None] * chainLength
+            index = 0
+            while stateList[0] is None:
+                self.add_state(tuple(stateList), words[index])
+                stateList = stateList[1:] + [words[index]]
+                index += 1
+            while index < len(words):
+                self.add_state(tuple(stateList), words[index])
+                stateList = stateList[1:] + [words[index]]
+                index += 1
+            while stateList[0] is not None:
+                self.add_state(tuple(stateList), None)
+                stateList = stateList[1:] + [None]
 
-            # add all transitions for a 2-tuple and the following word
-            for i in xrange(0, len(words)-3):
-                self.add_state((words[i], words[i+1]), words[i+2])
 
-            # special cases for endings
-            self.add_state((words[len(words)-2], words[len(words)-1]),
-                           None)
-            self.add_state((words[len(words)-1], None), None)
-
-            # old code for states with a size of only 1
             ''''
             self.add_state("NULL", words[0])
             for i in xrange(len(words)-2):
