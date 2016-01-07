@@ -117,7 +117,8 @@ var PageHTML = React.createClass({
     }else{
       partial = (
         <div style={innerCenterStyle}>
-          <form className="usernameForm" onSubmit={this.handleSubmit}>
+          <h1 id="title-heading">Faker</h1>
+          <form id="username-form" onSubmit={this.handleSubmit}>
             <input
               type="text"
               placeholder="Twitter username"
