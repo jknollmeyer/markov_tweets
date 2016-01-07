@@ -27,7 +27,7 @@ def static_proxy(path):
 @app.route("/tweets", methods=['POST'])  # Route to activate tweet generation
 def tweets():
     maxid = userImageUrl = profileName = None
-
+    stateLength = 2
     # paginate through the tweets, getting 200 at a time
     for i in xrange(16):
         requestString = (
@@ -82,16 +82,17 @@ def tweets():
     vector.build_from_corpus(text_corpus)
     return_text = ''
     # build then chain, but re-do process if the result is too short
-    while len(return_text) < 30:
+    stateList = [None] * stateLength
+    cycles = 0
+    while (len(return_text) < 30 or len(return_text) > 170) and cycles < 10:
         return_text = ''
-        current = vector.generateTransition((None, None))
-        last = None
+        current = vector.generateTransition(tuple(stateList))
+        stateList = stateList[1:] + [current]
         # get new words until we hit a "None" result
         while current is not None:
             return_text = return_text + current + ' '
-            temp = current
-            current = vector.generateTransition((last, current))
-            last = temp
+            current = vector.generateTransition(tuple(stateList))
+            stateList = stateList[1:] + [current]
     data = json.dumps({
         'tweet': return_text,
         'pic': userImageUrl,
