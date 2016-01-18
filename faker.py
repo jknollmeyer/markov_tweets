@@ -3,13 +3,17 @@ from redis import Redis
 from application_only_auth import Client
 import markov_vector_module
 import json
+import os
+import sys
 app = Flask(__name__)
 
 redis = Redis()
 
 # import the key and secret from locally stored files (so they aren't in git)
-key_file = open('api_key.txt', 'r')
-secret_file = open('api_secret.txt', 'r')
+
+dirpath = os.path.abspath(os.path.dirname(__file__))
+key_file = open(os.path.join(dirpath,'api_key.txt'), 'r')
+secret_file = open(os.path.join(dirpath, 'api_secret.txt'), 'r')
 consumer_key = key_file.readline().rstrip('\n')
 consumer_secret = secret_file.readline().rstrip('\n')
 
@@ -27,7 +31,7 @@ def static_proxy(path):
 @app.route("/tweets", methods=['POST'])  # Route to activate tweet generation
 def tweets():
     maxid = userImageUrl = profileName = None
-    stateLength = 3
+    stateLength = 2
     # paginate through the tweets, getting 200 at a time
     for i in xrange(16):
         requestString = (
@@ -41,14 +45,14 @@ def tweets():
             requestString += ('&max_id=' + str(maxid - 1))
         # Exception handling for API requests i.e. HTTP 400 errors
         try:
-            api_output = client.request(requestString)
+	    api_output = client.request(requestString)
         except Exception, err:
             if err.code == 404:
                 return str(404)
             elif err.code == 401:
                 return str(401)
             else:
-                return "UNKNOWN"
+		return "UNKNOWN"
         # Handle a request that returns no tweets
         if api_output == []:
             # If this first batch of tweets is empty, send 204 no content
